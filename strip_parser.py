@@ -1,7 +1,6 @@
 import os, sys
 import pandas as pd
 import numpy as np
-from collections import OrderedDict
 
 # functions used for parsing strip measurement file and outputting a pandas dataframe
 
