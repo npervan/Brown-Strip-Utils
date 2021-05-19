@@ -56,10 +56,9 @@ def xml_writer(DataFile,option):
             rh = []
             pincurr = []
 
-            stripnum = pdata['Strip'].values.tolist()
             if 'interstrip' in DataFile:
-                res = [1e-9*float(val) for val in pdata['Interstrip Resistance']]   
-                cap = [1e12*float(val) for val in pdata['Interstrip C']]
+             res = [1e-9*float(val) for val in pdata['Interstrip Resistance']]   
+             cap = [1e12*float(val) for val in pdata['Interstrip C']]
                 
             else:
                 res = [1e-9*float(val) for val in pdata['Poly Resistance']]
@@ -71,6 +70,7 @@ def xml_writer(DataFile,option):
             temp = [float(val) for val in pdata['ChuckT']]
             rh = [float(val) for val in pdata['RH']]
             time = [val for val in pdata['Time']]
+            stripnum = [int(val) for val in pdata['Strip']]
 
             AvTemp = str(sum(temp)/len(temp))
             AvRH = str(sum(rh)/len(rh))
@@ -100,28 +100,27 @@ def xml_writer(DataFile,option):
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
-                    #time = add_branch(cvivdata, "TIME", str(time[i]))
+                    timestamp = add_branch(cvivdata, "TIME", str(time[i]))
 
             if option == 'CS':
                 for i in range(len(pdata['Strip'])):
                     cvivdata = add_branch(dataset2, "DATA")
-                    stripnum = add_branch(cvivdata, "STRIP", str(stripnum[i]))
+                    strip = add_branch(cvivdata, "STRIP", str(stripnum[i]))
                     capdata = add_branch(cvivdata, "CAPCTNC_PFRD", str(cap[i]))
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
-                    #time = add_branch(cvivdata, "TIME", str(time[i]))
-
+                    timestamp = add_branch(cvivdata, "TIME", str(time[i]))
 
             if option == 'IS':
                  for i in range(len(pdata['Strip'])):
                     cvivdata = add_branch(dataset2, "DATA")
-                    stripnum = add_branch(cvivdata, "STRIP", str(stripnum[i]))
+                    strip = add_branch(cvivdata, "STRIP", str(stripnum[i]))
                     currdata = add_branch(cvivdata, "CURRNT_NAMPR", str(leakage_curr[i]))
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
-                    #time = add_branch(cvivdata, "TIME", str(time[i]))
+                    timestamp = add_branch(cvivdata, "TIME", str(time[i]))
 
             if option == 'RIS':
                 for i in range(len(pdata['Strip'])):
@@ -131,34 +130,35 @@ def xml_writer(DataFile,option):
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
-                    #time = add_branch(cvivdata, "TIME", str(time[i]))
+                    timestamp = add_branch(cvivdata, "TIME", str(time[i]))
 
             if option == 'RS':
                 for i in range(len(pdata['Strip'])):
+         
                     cvivdata = add_branch(dataset2, "DATA")
-                    stripnum = add_branch(cvivdata, "STRIP", str(stripnum[i]))
+                    strip = add_branch(cvivdata, "STRIP", str(stripnum[i]))
                     resdata = add_branch(cvivdata, "RESSTNC_GOHM", str(res[i]))
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
-                    #time = add_branch(cvivdata, "TIME", str(time[i]))
+                    timestamp = add_branch(cvivdata, "TIME", str(time[i]))
 
 
             if option == 'PHS':
                 for i in range(len(pdata['Strip'])):
                     cvivdata = add_branch(dataset2, "DATA")
-                    stripnum = add_branch(cvivdata, "STRIP", str(stripnum[i]))
-                    currdata = add_branch(cvivdata, "CURRNTPH_NAMPR", str(pin_curr[i]))
+                    strip = add_branch(cvivdata, "STRIP", str(stripnum[i]))
+                    currdata = add_branch(cvivdata, "CURRNTPH_NAMPR", str(pincurr[i]))
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
-                    #time = add_branch(cvivdata, "TIME", str(time[i]))
+                    timestamp = add_branch(cvivdata, "TIME", str(time[i]))
 
             #Write xml to file
             #print (tostring(top))
             #print (prettify(top))
-            print(nameForSave+".xml")
-            f = open(nameForSave+".xml","w")
+            print(nameForSave+'_'+option+".xml")
+            f = open(nameForSave+'_'+option+".xml","w")
             f.write(str(prettify(top)))
             f.close()
 
