@@ -4,7 +4,7 @@ import os
 #import rhapi_mod as rhapi
 from xml.etree import ElementTree
 from xml.dom import minidom
-from datetime import datetime
+from datetime import datetime, timedelta
 from strip_parser import *
 
 def xml_writer(DataFile,option):
@@ -33,7 +33,7 @@ def xml_writer(DataFile,option):
             run = add_branch(header, "RUN")
             runtype = add_branch(run, "RUN_TYPE", "SQC")
             runnumtag = add_branch(run, "RUN_NUMBER", str(RunNum))
-            location = add_branch(run, "LOCATION", "Kit")
+            location = add_branch(run, "LOCATION", "KIT")
             username = add_branch(run, "INITIATED_BY_USER", User)
             runbegin = add_branch(run, "RUN_BEGIN_TIMESTAMP", str(datetime_obj))
             comment = add_branch(run, "COMMENT_DESCRIPTION")
@@ -50,7 +50,7 @@ def xml_writer(DataFile,option):
             #cv10kHz = []
             #bv = []
             temp = []
-            time = []
+            secs = []
             stripnum = []
             res = []
             rh = []
@@ -69,8 +69,12 @@ def xml_writer(DataFile,option):
             global_curr = [1e9*float(val) for val in pdata['Global Current']]
             temp = [float(val) for val in pdata['ChuckT']]
             rh = [float(val) for val in pdata['RH']]
-            time = [val for val in pdata['Time']]
+            secs = [int(val) for val in pdata['Time']]
             stripnum = [int(val) for val in pdata['Strip']]
+
+            #calculate the time
+            deltasecs = [val - secs[0] for val in secs]
+            time = [datetime_obj + timedelta(seconds=val) for val in secs]
 
             AvTemp = str(sum(temp)/len(temp))
             AvRH = str(sum(rh)/len(rh))
@@ -79,7 +83,7 @@ def xml_writer(DataFile,option):
             envdata = add_branch(dataset, "DATA")
             avgtemp = add_branch(envdata, "AV_TEMP_DEGC", AvTemp)
             avgrh = add_branch(envdata, "AV_RH_PRCNT", AvRH)
-            if option == 'CIS' or 'CS': freq = add_branch(envdata, "FREQ_HZ", "1000.0")
+            if option == 'CIS' or option == 'CS': freq = add_branch(envdata, "FREQ_HZ", "1000.0")
             child_DS = add_branch(dataset, "CHILD_DATA_SET")
             header2 = add_branch(child_DS, "HEADER")
             type2 = add_branch(header2, "TYPE")
@@ -137,7 +141,7 @@ def xml_writer(DataFile,option):
          
                     cvivdata = add_branch(dataset2, "DATA")
                     strip = add_branch(cvivdata, "STRIP", str(stripnum[i]))
-                    resdata = add_branch(cvivdata, "RESSTNC_GOHM", str(res[i]))
+                    resdata = add_branch(cvivdata, "RESSTNC_MOHM", str(res[i]*1e-3))
                     tempdata = add_branch(cvivdata, "TEMP_DEGC", str(temp[i]))
                     rhdata = add_branch(cvivdata, "RH_PRCNT", str(rh[i]))
                     biasdata = add_branch(cvivdata, "BIASCURRNT_NAMPR", str(global_curr[i]))
@@ -199,5 +203,5 @@ def add_branch(tree, branchname, data=""):
 
 if __name__ == '__main__':
     drop = ['Time', '_0', '_1', '_2', '_3', '_Mean', '_V']
-    xml_writer(sys.argv[1], 'CIS')
+    xml_writer(sys.argv[1], 'RS')
 
