@@ -38,6 +38,11 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
                     openIC = float(line.split(':')[-1])
                 except:
                     pass
+            elif '1000000Hz' in line:
+                try:
+                    openIC = float(line.split(':')[-1])
+                except:
+                    pass
             continue
         if line.startswith('Strip') or line.startswith('Bias'): 
             continue
@@ -47,7 +52,7 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
         vals = [val.strip() for val in vals]
         for i, val in enumerate(vals):
             key = meas_list[i]
-            if key == 'Strip':
+            if key == 'Strip' or key == 'Strip ':
                 data[key].append(int(val))
             else:
                 data[key].append(float(val))
@@ -101,7 +106,12 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
 
     print('Dataframe for sensor', name, 'now has the following axes:', pdata.axes)
 
+    if np.mean(pdata['ChuckT']) > 1e10:
+        pdata['ChuckT'] = pdata['AirT']
+
     if __name__ == '__main__':
+        print('Dataframe data types are:')
+        print(pdata.dtypes)
         print('Will print 5 measurements:')
         print(pdata.iloc[0])
         print(pdata.iloc[1])
@@ -142,7 +152,7 @@ def parseHeader(lines):
                 print('Found open coupling capacitance measurement:', openCC)
             except:
                 print('Open coupling capacitance not measured')
-        if '100000Hz' in line:
+        if '100000Hz' in line or '1000000Hz' in line:
             try:
                 openIC = float(line.split(':')[-1])
                 print('Found open inter capacitance measurement:', openIC)
@@ -163,5 +173,5 @@ def measOrder(line):
     return measurements
 
 if __name__ == '__main__':
-    drop = ['Time', '_0', '_1', '_2', '_3', '_Mean', '_V']
+    drop = ['_0', '_1', '_2', '_3', '_Mean', '_V']
     parseFile(sys.argv[1], drop)

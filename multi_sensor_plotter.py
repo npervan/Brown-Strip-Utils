@@ -6,8 +6,8 @@ import strip_parser
 import matplotlib.pyplot as plt
 import glob
 
-outDir = 'stripPlots'
-inStr = 'inDir/*'
+outDir = 'interstripPlot'
+inStr = 'interstrips/*'
 to_drop = ['Time', '_0', '_1', '_2', '_3', '_Mean', '_V']
 
 avg_out = 'averages.txt'
@@ -37,12 +37,19 @@ def plotter(files):
         os.mkdir(outDir)
 
     # Writing script in a way, where we dont need each sensor to have the exact same measurements for it to run
+    sensors = list(data.keys())
+    sensors.sort(key = lambda x: int(x.split('_')[1]))
+    sensors.sort(key = lambda x: x.split('_')[-1])
+    plt_style = '-,'
     for meas in meas_all:
         plt.figure(figsize=(10,6))
-        to_plot = [sensor for sensor in data.keys() if meas in data[sensor]['measurements']]
+        to_plot = [sensor for sensor in sensors if meas in data[sensor]['measurements']]
         for sensor in to_plot:
             #plt.plot(data[sensor]['data']['Strip'], data[sensor]['data'][meas], color=plt.cm.RdYlBu(2*data[sensor]['num']), label=sensor)
-            plt.plot(data[sensor]['data']['Strip'], np.abs(data[sensor]['data'][meas]), label=sensor)
+            if 'MAINR' in sensor:
+                plt_style = '-+'
+            plt.plot(data[sensor]['data']['Strip'], np.abs(data[sensor]['data'][meas]), plt_style, label=sensor)
+            plt_style = '-,'
 
         plt.xlabel('Strip')
         plt.ylabel(getYUnit(meas))
@@ -56,7 +63,7 @@ def plotter(files):
 
     # Start with a dataframe for all the measurements and keys filled with 0
     avg = pd.DataFrame(np.zeros((len(data.keys()), len(meas_all)), dtype=np.float32), index=list(data.keys()), columns=meas_all)
-    for sensor in data:
+    for sensor in sensors:
         for meas in data[sensor]['measurements']:
             avg.loc[sensor,meas] = np.mean(data[sensor]['data'][meas])
 
