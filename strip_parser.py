@@ -18,7 +18,7 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
     header = file[:i+1]
     file = file[i+1:]
     
-    name, openCC, openIC = parseHeader(header)
+    name, openCC, openIC, user, time = parseHeader(header)
     meas_list = measOrder(header[-1])
     # create dictionary that holds measurement info
     data = {}
@@ -119,7 +119,7 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
         print(pdata.iloc[3])
         print(pdata.iloc[4])
 
-    return name, pdata
+    return name, user, time, pdata
 
 def rPreProcesses(meas_list, rtype):
     if rtype == 'I_RBias_V':
@@ -158,6 +158,15 @@ def parseHeader(lines):
                 print('Found open inter capacitance measurement:', openIC)
             except:
                 print('Open interstrip capacitance not measured')
+        if "Date/Time" in line:
+            TimeStamp = line.split(': ')[-1]
+            print("Time Stamp")
+            print(TimeStamp)
+        if "Tester" in line:
+            User = line.split(': ')[-1]
+            print("User")
+            print(User)
+
         if 'Sensor Name' in line:
             sensor = line.split()[-1]
             print('*******Found sensor name:', sensor)
@@ -165,7 +174,7 @@ def parseHeader(lines):
         print('****** WARNING ******')
         print('Unable to find sensor name in file header, check file and try re-running code')
         sys.exit()
-    return sensor, openCC, openIC
+    return sensor, openCC, openIC, User, TimeStamp
 
 def measOrder(line):
     measurements = line.strip().split('\t')
