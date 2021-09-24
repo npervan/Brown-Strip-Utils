@@ -19,7 +19,7 @@ def plotter(files):
     data = {}
     meas_all = []
     for i, file in enumerate(files):
-        sensor, temp_df = strip_parser.parseFile(file, to_drop)
+        sensor, _, _, temp_df = strip_parser.parseFile(file, to_drop)
         data[sensor] = {}
         data[sensor]['num'] = i # Use to keep colors consistent when plotting
         data[sensor]['data'] = temp_df.copy(deep=True)
