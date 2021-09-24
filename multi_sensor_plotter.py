@@ -1,16 +1,30 @@
 import os, sys
-sys.argv.append('-b') # run in batch mode so plot windows arent created
+#sys.argv.append('-b') # run in batch mode so plot windows arent created
 import numpy as np
 import pandas as pd
 import strip_parser
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import glob
+import argparse
 
-outDir = 'interstripPlot'
-inStr = 'interstrips/*'
+parser = argparse.ArgumentParser(description = 'Produce plots and give averages of strip measurement data')
+parser.add_argument('-i', '--input', type=str, default='strips', help='Name of input file. Can take single file, folder, or regular expressions.')
+parser.add_argument('-o', '--output', type=str, default='plots', help='Name of directory where plots will be saved.')
+parser.add_argument('-a', '--average', type=str, help='Specify excel filename to save averages to file. If no option given average values will not be saved.')
+parser.add_argument('-d', '--drop', type=str, default='', help='Comma separated list of substrings. Measurements from datafile which contain the substrings will be dropped from plotting and averaging.')
+args = parser.parse_args()
+
+
+outDir = args.output
+inStr = args.input
+
 to_drop = ['Time', '_0', '_1', '_2', '_3', '_Mean', '_V']
+if args.drop:
+    to_drop += args.drop.split(',')
+print('Will drop measurements which contain the following substrings:', to_drop)
 
-avg_out = 'averages.txt'
 
 def plotter(files):
 
@@ -38,7 +52,7 @@ def plotter(files):
 
     # Writing script in a way, where we dont need each sensor to have the exact same measurements for it to run
     sensors = list(data.keys())
-    sensors.sort(key = lambda x: int(x.split('_')[1]))
+    sensors.sort(key = lambda x: x.split('_')[1])
     sensors.sort(key = lambda x: x.split('_')[-1])
     plt_style = '-,'
     for meas in meas_all:
@@ -69,9 +83,13 @@ def plotter(files):
 
     print(avg)
 
-    outf = open(avg_out, 'w')
-    outf.write(avg.to_csv())
-    outf.close()
+    if args.average:
+        avg_out = args.average.split('.')[0]
+        avg_out += '.xlsx'
+        avg.to_excel(avg_out)
+    #outf = open(avg_out, 'w')
+    #outf.write(avg.to_csv(), sep='\t')
+    #outf.close()
 
 def getYUnit(meas):
     if 'Istrip' in meas or 'Current' in meas or 'Pin' in meas:
@@ -84,9 +102,14 @@ def getYUnit(meas):
         return meas
 
 def main():
-    print('Will glob following string to get files:', inStr)
+    global inStr
+    if os.path.isdir(inStr):
+        inStr += "/*"
     files = glob.glob(inStr)
     print('Found the following files:', files)
+    if files == []:
+        print("No files found for input '%s'. Please double check and try again." % inStr)
+        sys.exit(1)
     plotter(files)
     return 0
 
