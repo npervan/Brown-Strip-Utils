@@ -72,11 +72,21 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
         pdata['Interstrip C'][pdata['Interstrip C'] < 0.] = np.NaN
 
     # now calculate resistance values
-    if any(['I_RBias_V' in m for m in meas_list]):
-        v_step, i_cols = rPreProcesses(meas_list, 'I_RBias_V')
+# 	if any(['I_RBias_V' in m for m in meas_list]):
+# 		v_step, i_cols = rPreProcesses(meas_list, 'I_RBias_V')
+# 		i_mat = pdata[i_cols].to_numpy(copy=True)
+# 		i_mat = np.transpose(i_mat)
+# 		pdata['Poly Resistance'] = np.polyfit(v_step, i_mat, 1)[0]**-1
+    if any(['I_RBias_V-5.0' in m for m in meas_list]):
+        v_step, i_cols = rPreProcesses(meas_list, 'I_RBias_V-5.0')
         i_mat = pdata[i_cols].to_numpy(copy=True)
         i_mat = np.transpose(i_mat)
         pdata['Poly Resistance'] = np.polyfit(v_step, i_mat, 1)[0]**-1
+    if any(['I_RBias_V-1.0' in m for m in meas_list]):
+        v_step, i_cols = rPreProcesses(meas_list, 'I_RBias_V-1.0')
+        i_mat = pdata[i_cols].to_numpy(copy=True)
+        i_mat = np.transpose(i_mat)
+        pdata['Poly Resistance LowV'] = np.polyfit(v_step, i_mat, 1)[0]**-1
     if any(['I_RBias Nbr_V' in m for m in meas_list]):
         v_step, i_cols = rPreProcesses(meas_list, 'I_RBias Nbr_V')
         i_mat = pdata[i_cols].to_numpy(copy=True)
@@ -122,7 +132,8 @@ def parseFile(filename, to_drop=[], remove_leaky=False):
     return name, user, time, pdata
 
 def rPreProcesses(meas_list, rtype):
-    if rtype == 'I_RBias_V':
+#     if rtype == 'I_RBias_V':
+    if 'I_RBias_V' in rtype:
         itype = 'Istrip_Median'
     elif rtype == 'I_RBias Nbr_V':
         itype = 'IstripNbr_Median'
@@ -131,7 +142,7 @@ def rPreProcesses(meas_list, rtype):
     
     i_cols = [m for m in meas_list if rtype in m]
     v_steps = [float(m.split('V')[-1]) for m in i_cols]
-
+    
     if itype in meas_list:
         i_cols.insert(0, itype)
         v_steps.insert(0, 0.)
